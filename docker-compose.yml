@@ -1,0 +1,50 @@
+version: "3.5"
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: victor
+      POSTGRES_PASSWORD: Vrp1995vrp.
+      POSTGRES_DB: microservice
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-network
+
+  eureka-server:
+    image: eureka-server:lastest
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
+
+  auth-service:
+    image: auth-service:latest
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - microservices-network
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservice
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+networks:
+  microservices-network:
+
+volumes:
+  postgres_data:
+    driver: local
